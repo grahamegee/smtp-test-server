@@ -2,6 +2,8 @@ import asyncio
 import logging
 import ssl
 
+from binascii import Error as BaError
+from base64 import b64encode, b64decode
 from aiosmtpd.controller import Controller
 from aiosmtpd.handlers import Sink, Debugging
 from aiosmtpd.smtp import SMTP
@@ -9,7 +11,32 @@ from aiosmtpd.smtp import SMTP
 
 class ExtendedSMTP(SMTP):
     async def smtp_AUTH(self, arg):
-        import ipdb; ipdb.set_trace()
+        if arg.upper() == 'LOGIN':
+            await self.push('334 {}'.format(b64encode(b'Username').decode()))
+            try:
+                username = await self._reader.readline()
+                username = b64decode(username.rstrip(b'\r\n')).decode('ascii')
+                await self.push(
+                    '334 {}'.format(b64encode(b'Password').decode()))
+                password = await self._reader.readline()
+                password = b64decode(password.rstrip(b'\r\n')).decode('ascii')
+            except BaError:
+                # FIXME: correct error code?
+                await self.push('500 Challenge must be Base64 encoded')
+            # FIXME: Captured that correct exceptions?
+            # probably need to break out into separate branches also.
+            # ConnectionReset should be handled separately.
+            except (ConnectionResetError, asyncio.CancelledError):
+                await self.push(
+                    '503 for AUTH LOGIN supply username then password')
+            if username == USERNAME and password == PASSWORD:
+                await self.push('235 Authentication successful')
+            else:
+                await self.push('535 Invalid credentials')
+        else:
+            await self.push('504 AUTH {} Not Implemented'.format(arg))
+
+
 
 
 if __name__ == '__main__':
