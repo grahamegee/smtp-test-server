@@ -61,6 +61,8 @@ if __name__ == '__main__':
     context.load_cert_chain('cert.pem', 'key.pem')
     
     loop = asyncio.get_event_loop()
+    smtp = lambda: ExtendedSMTP(
+        MessageForwarder(), enable_SMTPUTF8=True, loop=loop)
 
     server = loop.run_until_complete(
         loop.create_server(
