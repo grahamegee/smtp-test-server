@@ -4,8 +4,6 @@ import ssl
 
 from binascii import Error as BaError
 from base64 import b64encode, b64decode
-from aiosmtpd.controller import Controller
-from aiosmtpd.handlers import Sink, Debugging
 from aiosmtpd.smtp import SMTP
 from email import message_from_bytes
 from pprint import pprint
