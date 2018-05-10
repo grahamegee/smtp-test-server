@@ -11,10 +11,6 @@ class ExtendedSMTP(SMTP):
     async def smtp_AUTH(self, arg):
         import ipdb; ipdb.set_trace()
 
-class AuthHandler:
-    async def handle_AUTH(self, server, session, envelope):
-        import ipdb; ipdb.set_trace()
-        
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
@@ -23,7 +19,6 @@ if __name__ == '__main__':
     context.load_cert_chain('cert.pem', 'key.pem')
     
     loop = asyncio.get_event_loop()
-    smtp = lambda: ExtendedSMTP(AuthHandler(), enable_SMTPUTF8=True, loop=loop)
 
     server = loop.run_until_complete(
         loop.create_server(
