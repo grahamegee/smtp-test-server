@@ -7,6 +7,13 @@ from base64 import b64encode, b64decode
 from aiosmtpd.controller import Controller
 from aiosmtpd.handlers import Sink, Debugging
 from aiosmtpd.smtp import SMTP
+from email import message_from_bytes
+from pprint import pprint
+
+
+# FIXME: This should be config.
+USERNAME = 'x'
+PASSWORD = 'x'
 
 
 class ExtendedSMTP(SMTP):
@@ -37,6 +44,14 @@ class ExtendedSMTP(SMTP):
             await self.push('504 AUTH {} Not Implemented'.format(arg))
 
 
+class MessageForwarder:
+    async def handle_DATA(self, server, session, envelope):
+        data = envelope.content
+        message = message_from_bytes(data)
+        msg_dict = {k: v for k, v in message.items()}
+        msg_dict['Body'] = message.get_payload()
+        pprint(msg_dict)
+        return '250 OK'
 
 
 if __name__ == '__main__':
