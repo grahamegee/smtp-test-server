@@ -56,10 +56,10 @@ class MessageForwarder:
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    
+
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain('cert.pem', 'key.pem')
-    
+
     loop = asyncio.get_event_loop()
     smtp = lambda: ExtendedSMTP(
         MessageForwarder(), enable_SMTPUTF8=True, loop=loop)
