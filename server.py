@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import ssl
+import aiohttp
 
 from binascii import Error as BaError
 from base64 import b64encode, b64decode
@@ -46,10 +47,24 @@ class MessageForwarder:
     async def handle_DATA(self, server, session, envelope):
         data = envelope.content
         message = message_from_bytes(data)
-        msg_dict = {k: v for k, v in message.items()}
-        msg_dict['Body'] = message.get_payload()
+        msg_dict = {low_camel_case(k): v for k, v in message.items()}
+        msg_dict['body'] = message.get_payload()
         pprint(msg_dict)
+        async with aiohttp.ClientSession() as session:
+            await session.post('http://localhost:3000', json=msg_dict)
         return '250 OK'
+
+
+def low_camel_case(key):
+    '''
+    Convert title cased hyphen separated strings to lowerCamelCase.
+        E.g. Convert 'X-Forwarded-To to 'xForwardedTo'.
+    '''
+    # FIXME: client side hack to deal with Aeson Haskell library on
+    # the server side. Really need to deal with fields which begin with
+    # a Capital letter and contain hyphens on the server side
+    head, *tail = key.split("-")
+    return "".join([head.lower()] + tail)
 
 
 if __name__ == '__main__':
